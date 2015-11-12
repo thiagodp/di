@@ -1,0 +1,24 @@
+{
+	"name": "phputil/di",
+	"type": "library",
+	"description": "Dependency Injection for PHP",
+	"keywords": [ "dependency", "injection", "injector" ],
+	"homepage": "http://github.com/thiagodp/di",
+	"license": "LGPL-3",
+	"authors": [ { "name": "Thiago Delgado Pinto" } ],
+	"support": {
+		"issues": "https://github.com/thiagodp/di/issues",
+		"source": "https://github.com/thiagodp/di"
+	},
+	"require": {
+		"php": ">=5.4"
+	},
+	"require-dev": {
+        "phpunit/phpunit": ">=4.0"
+    },	
+	"suggest": {
+	},
+	"autoload": {
+		"psr-4": { "phputil\\": "lib/" }
+	}
+}
