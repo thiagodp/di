@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
-	bootstrap="lib\\DI.php"
+	bootstrap="lib/DI.php"
 	>
     <testsuites>
         <testsuite name="Tests" >
