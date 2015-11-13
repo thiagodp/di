@@ -4,7 +4,7 @@ Dependency Injection for PHP.
 
 [![Build Status](https://travis-ci.org/thiagodp/di.svg?branch=master)](https://travis-ci.org/thiagodp/di)
 
-Current [version](http://semver.org/): `0.2` (_not production-ready yet, but usable_)
+Current [version](http://semver.org/): `0.2.x`
 
 ### Example 1:
 
