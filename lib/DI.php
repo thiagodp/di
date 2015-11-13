@@ -58,18 +58,9 @@ class DI {
 		return new Cfg( $name );
 	}
 	
-	static function create( $name ) {
+	static function create( $name, array $params = array() ) {
 		
-		$params = array();
-		$hasParams = func_num_args() > 1;
-
-		if ( $hasParams ) {
-			$params = func_get_args();
-			unset( $params[ 0 ] );
-			$params = array_values( $params );
-			//var_dump( $params );
-		}
-		
+		$hasParams = count( $params ) > 0;
 		//echo 'class is ', $name, "\n";
 		
 		$hasCfg = isset( self::$configs[ $name ] );

@@ -158,12 +158,12 @@ class DITest extends \PHPUnit_Framework_TestCase {
 	
 	function test_can_create_class_with_little_params() {
 		$text = 'World';
-		$o1 = DI::create( self::PKG . 'C1', $text );
+		$o1 = DI::create( self::PKG . 'C1', array( $text ) );
 		$this->assertEquals( $text, $o1->text() );
 	}
 	
 	function test_can_create_class_with_many_params() {
-		$o1 = DI::create( self::PKG . 'C4', 1, 2, 3, 4, 5, 6, 7 );
+		$o1 = DI::create( self::PKG . 'C4', array( 1, 2, 3, 4, 5, 6, 7 ) );
 		$this->assertEquals( array( 1, 2, 3, 4, 5, 6, 7 ),
 			array( $o1->a, $o1->b, $o1->c, $o1->d, $o1->e, $o1->f, $o1->g ) );
 	}
