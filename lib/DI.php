@@ -51,7 +51,11 @@ class DI {
 	}
 	
 	static function config( Cfg $cfg ) {
-		self::$configs[ $cfg->name ] = $cfg;
+		$className = $cfg->name;
+		$name = mb_substr( $className, 0, 1 ) === '\\'
+			? mb_substr( $className, 1 ) : $className;			
+		//self::$configs[ $cfg->name ] = $cfg;
+		self::$configs[ $name ] = $cfg;
 	}
 	
 	static function let( $name ) {
@@ -61,12 +65,14 @@ class DI {
 	static function create( $name, array $params = array() ) {
 		
 		$hasParams = count( $params ) > 0;
-		//echo 'class is ', $name, "\n";
+		//echo 'class is ', $name, "<br />";
+		//var_dump( self::$configs );
 		
 		$hasCfg = isset( self::$configs[ $name ] );
 		$cfg = $hasCfg ? self::$configs[ $name ] : null; 
 		
 		$hasClazz = $hasCfg && $cfg->clazz !== null;
+		//echo 'hasClazz is ', $hasClazz ? 'true' : 'false', '<br />';
 		$isShared = $hasCfg && $cfg->shared === true;
 		$hasCallable = $hasCfg && $cfg->callable !== null;
 		
@@ -80,12 +86,14 @@ class DI {
 			return $obj;
 		}
 		
-		$rc = new \ReflectionClass( $hasClazz ? $cfg->clazz : $name );
+		$clazzName = $hasClazz ? $cfg->clazz : $name;
+		$rc = new \ReflectionClass( $clazzName );
+		$isInstantiable = $rc->isInstantiable() === true;
 		$hasConstructor = $rc->getConstructor() !== null;
 		$rParams = $hasConstructor ? $rc->getConstructor()->getParameters() : array();
 		
-		if ( ! $hasCfg && count( $rParams ) < 1 ) {
-			return new $name;
+		if ( $isInstantiable && count( $rParams ) < 1 ) {
+			return new $clazzName;
 		}
 		
 		$args = array();
@@ -112,8 +120,7 @@ class DI {
 			++$i;
 		}
 		
-		//echo "\n", 'args is '; var_dump( $args );
-		
+		//echo "\n", 'args is '; var_dump( $args );		
 		$obj = $rc->newInstanceArgs( $args );
 		if ( $isShared ) { self::$objects[ $name ] = $obj; }
 		
