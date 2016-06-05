@@ -65,19 +65,22 @@ class DI {
 	static function create( $name, array $params = array() ) {
 		
 		$hasParams = count( $params ) > 0;
-		//echo 'class is ', $name, "<br />";
-		//var_dump( self::$configs );
+		//echo 'class is ', $name, "<br />"; var_dump( self::$configs );
 		
-		$hasCfg = isset( self::$configs[ $name ] );
-		$cfg = $hasCfg ? self::$configs[ $name ] : null; 
+		$cName = mb_substr( $name, 0, 1 ) === '\\'
+			? mb_substr( $name, 1 )
+			: $name;
+		
+		$hasCfg = isset( self::$configs[ $cName ] );
+		$cfg = $hasCfg ? self::$configs[ $cName ] : null; 
 		
 		$hasClazz = $hasCfg && $cfg->clazz !== null;
 		//echo 'hasClazz is ', $hasClazz ? 'true' : 'false', '<br />';
 		$isShared = $hasCfg && $cfg->shared === true;
 		$hasCallable = $hasCfg && $cfg->callable !== null;
 		
-		if ( $isShared && isset( self::$objects[ $name ] ) ) {
-			return self::$objects[ $name ];
+		if ( $isShared && isset( self::$objects[ $cName ] ) ) {
+			return self::$objects[ $cName ];
 		}
 		
 		if ( $hasCallable ) {
@@ -120,11 +123,15 @@ class DI {
 			++$i;
 		}
 		
-		//echo "\n", 'args is '; var_dump( $args );		
+		//echo "\n", 'className is '; var_dump( $clazzName );
+		//echo "\n", 'configs is '; var_dump( self::$configs );
+		//echo "\n", 'args is '; var_dump( $args );
+		//echo "\n", 'rParams is '; var_dump( $rParams );
 		$obj = $rc->newInstanceArgs( $args );
 		if ( $isShared ) { self::$objects[ $name ] = $obj; }
 		
 		return $obj;
 	}
+	
 }
 ?>
