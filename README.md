@@ -131,3 +131,28 @@ DI::config( DI::let( 'I' )->call( function() {
 
 $i = DI::create( 'I' ); // Calls your function to create a "C" instance
 ```
+
+### Example 8:
+
+```php
+class A {
+	private $text;
+	function __construct( $text ) {
+		$this->text = $text;
+	}
+}
+
+// Lets you customize a callable with parameters
+DI::config( DI::let( 'A' )->call( function( $a, $b ) {
+		return new A( $a . $b );
+	} ) );
+
+// Uses the customized constructor
+$a = DI::create( 'A', array( 'Hello, ', 'world' ) );
+echo $a->text(); // Hello, world
+
+// Ignore the customized constructor passing true after the parameters
+$a2 = DI::create( 'A', array( 'Hi!' ), true );
+echo $a2->text(); // Hi
+
+```

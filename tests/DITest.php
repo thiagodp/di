@@ -191,6 +191,32 @@ class DITest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'bla', $o3->i1()->text() );
 	}
 	*/
+	
+	function test_can_use_a_customized_creation_function() {
+		DI::config(
+			DI::let( self::PKG . 'C1' )
+				->call( function( $one, $two ) {
+					return new C1( $one . $two );
+				} )
+			);
+		$one = 'hello';
+		$two = 'world';
+		$text = $one . $two;
+		$c1b = DI::create( self::PKG . 'C1', array( $one, $two ) );
+		$this->assertEquals( $text, $c1b->text() );
+	}
+	
+	function test_can_ignore_a_customized_creation_function() {
+		DI::config(
+			DI::let( self::PKG . 'C1' )
+				->call( function( $one, $two ) {
+					return new C1( $one . $two );
+				} )
+			);
+		$text = 'Hi!';
+		$c1b = DI::create( self::PKG . 'C1', array( $text ), true );
+		$this->assertEquals( $text, $c1b->text() );
+	}	
 }
 
 ?>

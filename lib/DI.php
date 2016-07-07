@@ -52,8 +52,7 @@ class DI {
 	
 	static function config( Cfg $cfg ) {
 		$className = $cfg->name;
-		$name = mb_substr( $className, 0, 1 ) === '\\'
-			? mb_substr( $className, 1 ) : $className;			
+		$name = self::fixClassName( $className );
 		//self::$configs[ $cfg->name ] = $cfg;
 		self::$configs[ $name ] = $cfg;
 	}
@@ -62,15 +61,28 @@ class DI {
 		return new Cfg( $name );
 	}
 	
-	static function create( $name, array $params = array() ) {
+	/**
+	 *  Creates an object of the informed class by calling its
+	 *  constructor, or the configured creation function. The 
+	 *  constructor is called whether no creation function is 
+	 *  configured or $ignoreCallable is true. The given 
+	 *  construction parameters should be the same as the
+	 *  chosen construction alternative.
+	 *  
+	 *  @param string $name		Name of the class or interface.
+	 *  @param array $params	Construction parameters.
+	 *  @return object
+	 */	
+	static function create(
+		$name
+		, array $params = array()
+		, $ignoreCallable = false
+		) {
 		
 		$hasParams = count( $params ) > 0;
 		//echo 'class is ', $name, "<br />"; var_dump( self::$configs );
 		
-		$cName = mb_substr( $name, 0, 1 ) === '\\'
-			? mb_substr( $name, 1 )
-			: $name;
-		
+		$cName = self::fixClassName( $name );
 		$hasCfg = isset( self::$configs[ $cName ] );
 		$cfg = $hasCfg ? self::$configs[ $cName ] : null; 
 		
@@ -83,8 +95,8 @@ class DI {
 			return self::$objects[ $cName ];
 		}
 		
-		if ( $hasCallable ) {
-			$obj = call_user_func( $cfg->callable );
+		if ( $hasCallable && ! $ignoreCallable ) {
+			$obj = call_user_func_array( $cfg->callable, $params );
 			if ( $isShared ) { self::$objects[ $name ] = $obj; }
 			return $obj;
 		}
@@ -133,5 +145,10 @@ class DI {
 		return $obj;
 	}
 	
+	private static function fixClassName( $name ) {
+		return mb_substr( $name, 0, 1 ) === '\\'
+			? mb_substr( $name, 1 )
+			: $name;		
+	}
 }
 ?>
