@@ -6,7 +6,17 @@ Dependency Injection for PHP.
 
 We use [semantic version](http://semver.org/). See [our releases](https://github.com/thiagodp/di/releases).
 
-### Example 1:
+### Classes
+
+* [phputil\DI](https://github.com/thiagodp/di/blob/master/lib/DI.php)
+
+### Installation
+
+```command
+composer require phputil/di
+```
+
+### Example 1
 
 ```php
 class A {}
