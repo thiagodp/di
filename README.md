@@ -28,7 +28,7 @@ class C {
 	}
 }
 
-// Automatically creates A and B, and inject them in C
+// Automatically creates "A" and "B", and inject them in "C"
 $c = DI::create( 'C' );
 ```
 
@@ -43,10 +43,10 @@ class MyClass implements MyInterface {
 	function say( $what ) { echo $what; }
 }
 
-// Configures MyInterface to be created using MyClass
+// Configures "MyInterface" to be created using "MyClass"
 DI::config( DI::let( 'MyInterface' )->create( 'MyClass' ) );
 
-$foo = DI::create( 'MyClass' ); // Create an instance of MyClass
+$foo = DI::create( 'MyClass' ); // Create an instance of MyClass (no configuration required)
 $foo->say( 'hello' );
 
 $bar = DI::create( 'MyInterface' ); // Create an instance of MyClass!
@@ -77,7 +77,7 @@ class X {
 	}
 }
 
-// Configures "I" to be created using B
+// Configures "I" to be created using "B"
 DI::config( DI::let( 'I' )->create( 'B' ) );
 
 // Automatically creates and injects "A" and "C", and
@@ -93,7 +93,8 @@ class A {
 		echo $one, ', ', $two;
 	}
 }
-// Pass simple constructor arguments as an array
+
+// Creates "A", passing constructor arguments as an array
 $a = DI::create( 'A', array( 'hello' ) ); // prints hello, world
 ```
 
@@ -162,5 +163,4 @@ echo $a->text(); // Hello, world
 // Ignore the customized constructor passing true after the parameters
 $a2 = DI::create( 'A', array( 'Hi!' ), true );
 echo $a2->text(); // Hi
-
 ```
