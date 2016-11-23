@@ -14,7 +14,7 @@ We use [semantic version](http://semver.org/). See [our releases](https://github
 composer require phputil/di
 ```
 
-### Example 1:
+### Example 1: automatic injection without configuring anything
 
 ```php
 class A {}
@@ -32,7 +32,7 @@ class C {
 $c = DI::create( 'C' );
 ```
 
-### Example 2:
+### Example 2: configuring the injection for interfaces
 
 ```php
 interface MyInterface {
@@ -53,7 +53,7 @@ $bar = DI::create( 'MyInterface' ); // Create an instance of MyClass!
 $bar->say( 'world' );
 ```
 
-### Example 3:
+### Example 3: a more complex model
 
 ```php
 interface I {}
@@ -85,7 +85,7 @@ DI::config( DI::let( 'I' )->create( 'B' ) );
 $x = DI::create( 'X' );
 ```
 
-### Example 4:
+### Example 4: passing constructor's arguments
 
 ```php
 class A {
@@ -98,7 +98,7 @@ class A {
 $a = DI::create( 'A', array( 'hello' ) ); // prints hello, world
 ```
 
-### Example 5:
+### Example 5: configuring shared instances
 
 ```php
 class A {}
@@ -111,7 +111,7 @@ $a2 = DI::create( 'A' );
 var_dump( $a1 === $a2 ); // bool(true)
 ```
 
-### Example 6:
+### Example 6: configuring shared instances for interfaces
 
 ```php
 interface I {}
@@ -126,7 +126,7 @@ $i2 = DI::create( 'I' );
 var_dump( $i1 === $i2 ); // bool(true)
 ```
 
-### Example 7:
+### Example 7: defining a creation function
 
 ```php
 interface I {}
@@ -141,7 +141,7 @@ DI::config( DI::let( 'I' )->call( function() {
 $i = DI::create( 'I' ); // Calls your function to create a "C" instance
 ```
 
-### Example 8:
+### Example 8: passing arguments for creation functions
 
 ```php
 class A {
