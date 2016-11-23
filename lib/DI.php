@@ -52,7 +52,7 @@ class DI {
 	
 	static function config( Cfg $cfg ) {
 		$className = $cfg->name;
-		$name = self::fixClassName( $className );
+		$name = ltrim( $className, '\\' );
 		//self::$configs[ $cfg->name ] = $cfg;
 		self::$configs[ $name ] = $cfg;
 	}
@@ -82,7 +82,7 @@ class DI {
 		$hasParams = count( $params ) > 0;
 		//echo 'class is ', $name, "<br />"; var_dump( self::$configs );
 		
-		$cName = self::fixClassName( $name );
+		$cName = ltrim( $name, '\\' );
 		$hasCfg = isset( self::$configs[ $cName ] );
 		$cfg = $hasCfg ? self::$configs[ $cName ] : null; 
 		
@@ -143,12 +143,6 @@ class DI {
 		if ( $isShared ) { self::$objects[ $name ] = $obj; }
 		
 		return $obj;
-	}
-	
-	private static function fixClassName( $name ) {
-		return mb_substr( $name, 0, 1 ) === '\\'
-			? mb_substr( $name, 1 )
-			: $name;		
 	}
 }
 ?>
