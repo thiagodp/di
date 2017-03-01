@@ -1,8 +1,10 @@
 <?php
 namespace phputil\di;
 
+use \ReflectionClass;
+
 /**
- *  Configuration of a class.
+ *  Configuration of a dependency injection.
  *  
  *  @author	Thiago Delgado Pinto
  */
@@ -38,16 +40,18 @@ class Cfg {
  */
 class DI {
 
-	private static $configs = array();
-	private static $objects = array();
-	//private static $targets = array();
+	// Classes configurations
+	private static $configs = array(); // string (class name) => Cfg
+	// Shared objects
+	private static $objects = array(); // string (class name) => object
+	// Arguments references
+	private static $args = array(); // string (class name) => array( 'rc' => ReflectionClass, 'params' => constructor params )
 	
 	private function __construct() {}
 	
 	static function reset() {
 		self::$configs = array();
 		self::$objects = array();
-		//self::$targets = array();
 	}
 	
 	static function config( Cfg $cfg ) {
@@ -78,71 +82,107 @@ class DI {
 		, array $params = array()
 		, $ignoreCallable = false
 		) {
-		
-		$hasParams = count( $params ) > 0;
 		//echo 'class is ', $name, "<br />"; var_dump( self::$configs );
-		
 		$cName = ltrim( $name, '\\' );
+		// A shared object exists?
+		if ( isset( self::$objects[ $cName ] ) ) {
+			// Return it
+			return self::$objects[ $cName ];
+		}		
+
+		$hasParams = count( $params ) > 0;
+
 		$hasCfg = isset( self::$configs[ $cName ] );
 		$cfg = $hasCfg ? self::$configs[ $cName ] : null; 
-		
-		$hasClazz = $hasCfg && $cfg->clazz !== null;
-		//echo 'hasClazz is ', $hasClazz ? 'true' : 'false', '<br />';
 		$isShared = $hasCfg && $cfg->shared === true;
+		$hasClazz = $hasCfg && $cfg->clazz !== null;
 		$hasCallable = $hasCfg && $cfg->callable !== null;
-		
-		if ( $isShared && isset( self::$objects[ $cName ] ) ) {
-			return self::$objects[ $cName ];
-		}
-		
+
+		// Need to use the callable?		
 		if ( $hasCallable && ! $ignoreCallable ) {
+			// Use it
 			$obj = call_user_func_array( $cfg->callable, $params );
-			if ( $isShared ) { self::$objects[ $name ] = $obj; }
-			return $obj;
+		} else {
+			$clazzName = $hasClazz ? $cfg->clazz : $name;
+			$clazzArgs = null;
+			// Reflection information already exists?
+			if ( isset( self::$args[ $clazzName ] ) ) {
+				// Use it
+				$clazzArgs = self::$args[ $clazzName ];
+			} else {
+				$clazzArgs = array( 'rc' => new ReflectionClass( $clazzName ) );
+				self::$args[ $clazzName ] = & $clazzArgs;
+			}
+			$obj = self::createWithArgs( $clazzArgs, $clazzName, $params, $cfg );
 		}
 		
-		$clazzName = $hasClazz ? $cfg->clazz : $name;
-		$rc = new \ReflectionClass( $clazzName );
-		$isInstantiable = $rc->isInstantiable() === true;
-		$hasConstructor = $rc->getConstructor() !== null;
-		$rParams = $hasConstructor ? $rc->getConstructor()->getParameters() : array();
+		// If is shared, add to the shared objects
+		if ( $isShared ) { self::$objects[ $name ] = $obj; }
 		
+		return $obj;
+	}
+
+
+	private static function createWithArgs( &$clazzArgs, $clazzName, array &$params, &$cfg ) {
+
+		$rc = $clazzArgs[ 'rc' ];
+		$isInstantiable = $rc->isInstantiable() === true;
+
+		$rParams = null;
+		if ( isset( $clazzArgs[ 'params' ] ) ) {
+			$rParams = $clazzArgs[ 'params' ];
+		} else {
+			$cParams = $rc->getConstructor() !== null
+				? $rc->getConstructor()->getParameters()
+				: array();
+
+			$rParams = array();
+			foreach ( $cParams as $rp ) {
+				$newParam = array(
+					'name' => $rp->getName(),
+					'class' => $rp->getClass() ? $rp->getClass()->name : null
+				);
+				if ( $rp->isDefaultValueAvailable() ) {
+					$newParam[ 'defValue' ] = $rp->getDefaultValue();
+				}
+				$rParams []= $newParam;
+			}
+
+			$clazzArgs[ 'params' ] = & $rParams;
+		}		
+		// Can instantiate directly ?
 		if ( $isInstantiable && count( $rParams ) < 1 ) {
 			return new $clazzName;
 		}
 		
+		// Let's build $args with the arguments for the constructor
 		$args = array();
-		$i = 0;
-		foreach ( $rParams as $rp ) {
+
+		foreach ( $rParams as $i => $p ) {
 			
-			$key = $rp->getName();
+			$key = $p[ 'name' ];
 			$args[ $key ] = null;
 			
-			if ( $hasParams && isset( $params[ $i ] ) ) {
+			if ( isset( $cfg->params[ $i ] ) ) {
+				$args[ $key ] = $cfg->params[ $i ];
+			} else if ( isset( $params[ $i ] ) ) {
 				$args[ $key ] = $params[ $i ];
-			} else if ( $rp->isDefaultValueAvailable() ) {
-				$args[ $key ] = $rp->getDefaultValue();
+			} else if ( array_key_exists( 'defValue', $p ) ) {
+				$args[ $key ] = $p[ 'defValue' ];
 			} else {
-				$rpClass = $rp->getClass() ? $rp->getClass()->name : null;
+				$rpClass = $p[ 'class' ];
 				if ( $rpClass !== null ) {
 					$args[ $key ] = self::create( $rpClass );
 				}
 			}
-			// Overwrite with configured values, if are
-			if ( isset( $cfg->params[ $i ] ) ) {
-				$args[ $key ] = $cfg->params[ $i ];
-			}
-			++$i;
-		}
-		
+		}		
 		//echo "\n", 'className is '; var_dump( $clazzName );
 		//echo "\n", 'configs is '; var_dump( self::$configs );
 		//echo "\n", 'args is '; var_dump( $args );
 		//echo "\n", 'rParams is '; var_dump( $rParams );
-		$obj = $rc->newInstanceArgs( $args );
-		if ( $isShared ) { self::$objects[ $name ] = $obj; }
-		
-		return $obj;
+
+		// Create the class with the built arguments
+		return $rc->newInstanceArgs( $args );
 	}
 }
 ?>
