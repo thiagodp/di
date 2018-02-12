@@ -4,7 +4,7 @@
 	"description": "Dependency Injection for PHP",
 	"keywords": [ "dependency", "injection", "injector" ],
 	"homepage": "http://github.com/thiagodp/di",
-	"license": "LGPL-3",
+	"license": "LGPL-3.0-or-later",
 	"authors": [ { "name": "Thiago Delgado Pinto" } ],
 	"support": {
 		"issues": "https://github.com/thiagodp/di/issues",
